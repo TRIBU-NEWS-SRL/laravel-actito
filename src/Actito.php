@@ -42,6 +42,9 @@ class Actito
                 config('actito.http.retry'),
                 config('actito.http.retry_sleep'),
                 function (Exception $exception, PendingRequest $request) {
+                    if (! property_exists($exception, 'response') || $exception->response === null) {
+                        return false;
+                    }
                     if ($exception->response->status() === 404) {
                         return false;
                     }
