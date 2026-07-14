@@ -22,29 +22,18 @@ class Import
     public function create(string $table, string $filePath, string|array $config, array $queryParameters = []): Response
     {
         $table = $table === 'profile' ? 'table/'.config('actito.profile_table') : "customTable/$table";
-        $data = $this->payload($filePath, $config);
 
         $params = '';
         if ($queryParameters) {
             $params = '?'.Arr::query($queryParameters);
         }
 
-        return $this->client->post('v4/entity/'.config('actito.entity').'/'.$table.'/import'.$params, $data);
-    }
+        $parametersContents = is_array($config) ? json_encode($config) : Utils::tryFopen($config, 'r');
 
-    private function payload(string $filePath, string|array $config): array
-    {
-        return [
-            'multipart' => [
-                [
-                    'name' => 'inputFile',
-                    'contents' => Utils::tryFopen($filePath, 'r'),
-                ],
-                [
-                    'name' => 'parameters',
-                    'contents' => ! is_array($config) ? Utils::tryFopen($config, 'r') : $config,
-                ]
-            ]
-        ];
+        return $this->client
+            ->asMultipart()
+            ->attach('inputFile', Utils::tryFopen($filePath, 'r'), basename($filePath))
+            ->attach('parameters', $parametersContents, is_array($config) ? 'parameters.json' : basename($config))
+            ->post('v4/entity/'.config('actito.entity').'/'.$table.'/import'.$params);
     }
 }
