@@ -1,4 +1,7 @@
 # Changelog
+## 2.0.2
+### Fixed
+- `Import::create()` sent its multipart payload as JSON instead of multipart form data, causing every import (e.g. bulk table sync) to fail with `json_encode error: Type is not supported` as soon as a file was included.
 ## 1.0.4
 ### What's Changed
 - Caching the authorization token for 14 minutes (15 minutes is the default Actito validity)
